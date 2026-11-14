@@ -21,7 +21,9 @@ public class EquipoService {
                 "No enciende y pantalla parpadea", "Recibido", 1));
         equipos.add(new Equipo(nextId++, "PC Escritorio", "Dell", "OptiPlex 7090", "SN-DL-002",
                 "Sobrecalentamiento y ruido en ventilador", "En revision", 2));
-        historial.push("Inicializados 2 equipos de prueba");
+        equipos.add(new Equipo(nextId++, "Impresora", "Epson", "EcoTank L3250", "SN-EP-003",
+                "Atasco continuo de papel en bandeja", "Reparado", 1));
+        historial.push("Inicializados 3 equipos de prueba");
     }
 
     public List<Equipo> findAll() {
@@ -32,19 +34,11 @@ public class EquipoService {
         return equipos.toList().stream().filter(e -> e.getId() == id).findFirst();
     }
 
-    public Equipo create(CreateEquipoRequest request) {
-        Equipo nuevo = new Equipo(
-                nextId++,
-                request.getTipo(),
-                request.getMarca(),
-                request.getModelo(),
-                request.getNumeroSerie(),
-                request.getProblemaReportado(),
-                "Recibido",
-                request.getUsuarioId()
-        );
+    public Equipo create(CreateEquipoRequest req) {
+        Equipo nuevo = new Equipo(nextId++, req.tipo(), req.marca(), req.modelo(),
+                req.numeroSerie(), req.problemaReportado(), "Recibido", req.usuarioId());
         equipos.add(nuevo);
-        historial.push("Equipo registrado: " + nuevo.getMarca() + " " + nuevo.getModelo() + " (ID " + nuevo.getId() + ")");
+        historial.push("Alta equipo ID " + nuevo.getId() + ": " + nuevo.getMarca() + " " + nuevo.getModelo());
         return nuevo;
     }
 
@@ -52,7 +46,7 @@ public class EquipoService {
         Optional<Equipo> encontrado = findById(id);
         encontrado.ifPresent(equipo -> {
             equipo.setEstado(nuevoEstado);
-            historial.push("Equipo ID " + id + " cambio a estado: " + nuevoEstado);
+            historial.push("Cambio estado equipo ID " + id + " -> " + nuevoEstado);
         });
         return encontrado;
     }

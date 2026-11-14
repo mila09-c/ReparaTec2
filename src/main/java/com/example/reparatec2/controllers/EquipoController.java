@@ -15,41 +15,35 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class EquipoController {
 
-    private final EquipoService equipoService;
+    private final EquipoService service;
 
-    public EquipoController(EquipoService equipoService) {
-        this.equipoService = equipoService;
+    public EquipoController(EquipoService service) {
+        this.service = service;
     }
 
     @GetMapping
-    public ResponseEntity<List<Equipo>> listarEquipos() {
-        return ResponseEntity.ok(equipoService.findAll());
+    public List<Equipo> listarEquipos() {
+        return service.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Equipo> obtenerEquipo(@PathVariable int id) {
-        return equipoService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.of(service.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Equipo> registrarEquipo(@RequestBody CreateEquipoRequest request) {
-        if (request.getMarca() == null || request.getModelo() == null || request.getProblemaReportado() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        Equipo creado = equipoService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+    public ResponseEntity<Equipo> registrarEquipo(@RequestBody CreateEquipoRequest req) {
+        boolean incompleto = req.marca() == null || req.modelo() == null || req.problemaReportado() == null;
+        return incompleto
+                ? ResponseEntity.badRequest().build()
+                : ResponseEntity.status(HttpStatus.CREATED).body(service.create(req));
     }
 
     @PutMapping("/{id}/estado")
     public ResponseEntity<Equipo> cambiarEstado(@PathVariable int id, @RequestBody Map<String, String> body) {
-        String nuevoEstado = body.get("estado");
-        if (nuevoEstado == null || nuevoEstado.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-        return equipoService.updateEstado(id, nuevoEstado)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        String estado = body.get("estado");
+        return (estado == null || estado.isBlank())
+                ? ResponseEntity.badRequest().build()
+                : ResponseEntity.of(service.updateEstado(id, estado));
     }
 }
